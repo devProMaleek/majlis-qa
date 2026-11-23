@@ -1,7 +1,11 @@
 import { defineConfig } from "@playwright/test";
+import { existsSync } from "node:fs";
+
+if (existsSync(".env.test.local")) process.loadEnvFile(".env.test.local");
 
 export default defineConfig({
   testDir: "./tests",
+  testMatch: "**/*.spec.ts",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,

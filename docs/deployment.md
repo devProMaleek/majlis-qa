@@ -1,33 +1,32 @@
-# Local and Vercel deployment notes
+# Environment and deployment notes
 
-## This milestone
+## Current local implementation
 
-Run with Node.js 24. Install using `npm ci`, build using `npm run build`, start using `npm run start`. Next.js detects the App Router and the existing `next.config.ts`; no Vercel-specific configuration is needed for these shells. The checked-in npm lockfile is the reproducible dependency source.
+Use Node.js 24. The Supabase schema, Auth flow and access controls have been verified on the isolated local project described in [backend-foundation.md](backend-foundation.md). The app uses only `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. It does not require a service-role/secret key in application runtime.
 
-To deploy after review: create a Vercel project connected to the eventual repository, select the Next.js framework preset, set this app directory as the root, choose Node.js 24, and use the default build/output detection. Keep the preview clearly labelled and protect review deployments using Vercel deployment protection. Do not distribute this shell to event attendees.
+Local `.env.local` and `.env.test.local` files are ignored. The test file contains the local elevated provisioning key and database connection string; it must never be deployed or copied to another environment. Local fixture account passwords are intentionally public and the tooling refuses a non-local target.
 
-The local app currently lives in `outputs/majlis-qa` relative to the supplied workspace. If it is moved into a standalone repository, select the repository root instead. There has been no commit, push, repository creation on GitHub or deployment in this task.
+The Next.js project currently lives at `outputs/majlis-qa` relative to the original workspace. If it moves into a standalone repository, treat that directory as the project root. The npm lockfile pins the toolchain, including Supabase CLI 3.x. CLI commands target local development by default; hosted operations require an explicit target.
 
-If using the CLI, upgrade it first with `npm i -g vercel@latest`; the session reported an outdated CLI. Prefer a preview deployment for review. Deploying this preview must be separately authorised.
+## Hosted preparation — pending review and authorisation
 
-## Future Supabase environments
+No hosted Supabase project or Vercel deployment was created, linked or modified in this task. Before a hosted rollout:
 
-No Supabase SDK or project is wired yet. Do not paste credentials just to run the shells. Before the next milestone:
+1. Choose distinct development/staging and production Supabase projects; keep preview branches away from production data.
+2. Verify the target project and database version against the migration configuration (PostgreSQL 17 locally). Review both migration files and test on disposable staging first. Configure the Data API to expose only intended schemas; `private` must stay unexposed. Prefer disabling automatic grants on newly created tables, while keeping the explicit migration grants.
+3. Set the public Supabase URL/publishable key for each Vercel environment. Never put a secret/service-role key in a `NEXT_PUBLIC_*` variable. The config validator rejects elevated key formats.
+4. Configure Supabase Auth: email provider enabled; public registration and anonymous sign-in disabled; confirmed staff accounts; refresh rotation enabled; exact HTTPS site/redirect allowlists. Review password policy, SMTP, abuse protection and hosted sign-in limits. The local limit of 100 sign-in attempts per interval exists for repeatable tests and is not a production recommendation.
+5. Provision the first confirmed Auth user through a trusted administrative channel. Record their Auth UUID, create the organisation and insert its initial `organisation_admin` membership through reviewed privileged SQL. Merely creating an Auth user grants no staff access. Do not use user-editable metadata for roles. Invitation and password-recovery UI are separate upcoming work.
+6. Verify anonymous question reads fail through the actual hosted Data API, verify two separate organisations and assigned/unassigned moderators, and verify membership/assignment revocation. Local test scripts intentionally refuse hosted URLs; use a separately reviewed staging test configuration.
+7. Configure a Vercel project with the Next.js preset, this app directory as root, Node.js 24, and the default build/output detection. Build with `npm run build`; run with `npm run start` for a local production server. Next.js and the existing `next.config.ts` supply the required platform configuration.
+8. Protect review deployments and keep private auth/staff responses out of CDN/shared caches. Confirm HTTPS, refreshed cookies and no-store headers in the deployed environment.
 
-1. Use separate local/development, preview/staging and production projects. Do not let untrusted preview branches use production data.
-2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` per environment. Public keys require RLS; they confer no privacy on their own.
-3. Set a canonical `NEXT_PUBLIC_SITE_URL` after choosing the real origin. QR codes must be generated from that origin and the permanent event route, never the Figma example hostname.
-4. Keep elevated/secret keys server-only, out of all `NEXT_PUBLIC_*` values and logs. Add only the server variables actually required by the reviewed implementation.
-5. Review Auth redirect allowlists, invitation expiry and organisation membership before enabling staff routes.
-6. Apply versioned migrations to staging first and run the access-isolation, session-activation and anonymous-read denial tests before production.
+If using the Vercel CLI, upgrade the outdated session CLI first with `npm i -g vercel@latest`. Start with a protected preview deployment after the diff has been reviewed and tested. No commit, push, PR or deployment is authorised by the implementation request alone.
 
-## Required server guarantees before real use
+## Implemented guarantees and remaining gates
 
-- Authorise every staff operation; route visibility alone does not grant permissions.
-- Deny anonymous reads of questions and scope staff access to organisation membership and session assignments through RLS.
-- Enforce one open session per event in PostgreSQL, including concurrent activation attempts.
-- Accept anonymous questions only through a validated server boundary with shared/durable rate limits and scoped idempotency keys.
-- Treat Realtime as an invalidation/notification mechanism; re-read authorised PostgreSQL state after reconnects and protect updates against stale revisions.
-- Review draft retention and privacy, closed-session handling and unconfirmed delivery before implementing offline behaviour.
+Implemented and tested locally: explicit table grants, RLS on every app table, organisation/session access checks, composite tenant foreign keys, stable route slugs, one open session per event, revision-checked administrative session changes, cookie refresh, verified identity, generic sign-in failures and local session sign-out.
 
-These guarantees are planned requirements, not implemented features of this shell milestone.
+Still required before a real event: reviewed hosted setup, secure invitations and initial password/recovery flows, full event/session administration and publishing rules, actual QR generation from the permanent deployed URL, a validated anonymous submission boundary, shared/durable rate limits, idempotent retries, draft retention/privacy decisions, moderator mutation concurrency, authorised Realtime notifications/recovery, and real-device/load testing.
+
+Keep anonymous question writes and moderator mutation UI disabled until those boundaries exist. Realtime must remain a notification mechanism with PostgreSQL as the authoritative source. Deployment rollback should disable affected features and use a reviewed forward migration or restore process; never drop tables containing real attendee records as an ad hoc rollback.

@@ -19,7 +19,13 @@ export function QuestionCard({
   onOpen: () => void;
 }) {
   return (
-    <Card size="sm" className={cn("relative lg:has-data-[slot=card-footer]:pb-4", active && "lg:border-primary")}>
+    <Card
+      size="sm"
+      className={cn(
+        "relative lg:has-data-[slot=card-footer]:pb-4",
+        active && "lg:border-primary",
+      )}
+    >
       <CardHeader className="gap-2.5">
         <CardTitle>
           <button

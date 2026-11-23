@@ -44,3 +44,9 @@ The Figma specimens assign a 100px height to primary, secondary, disabled and de
 ## Scope boundary
 
 Review-only links, sample fixtures and disabled actions are deliberate additions needed to make the shells inspectable. No real attendee draft is stored or sent. Production loading, success, offline/retry, auth and invitation screens must be inspected separately before implementation.
+
+## Backend foundation: staff sign-in
+
+The Figma file was inspected again on 23 November 2026 before adding authentication. It now contains newer FINAL attendee/admin/moderator frames, but no staff sign-in or account-access frame. The backend milestone preserves the first shell implementation; it does not redesign those screens.
+
+The user explicitly selected a minimal email/password sign-in screen using the existing components. Missing interactions are resolved as follows: existing staff accounts only, no registration; labelled email/password fields; generic invalid-credentials feedback; pending/disabled states; no invented password-recovery or invitation links; fixed success destination `/staff`; an explicit no-membership state; sign-out with error feedback. The protected workspace is a read-only access summary, not an implementation of the final event/moderation dashboards.

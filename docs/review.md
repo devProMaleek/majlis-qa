@@ -1,5 +1,7 @@
 # First milestone — review handoff
 
+Historical application-shell handoff. For the current backend implementation and verification, see [backend-foundation.md](backend-foundation.md).
+
 Completed 23 November 2026. Scope: initialise Next.js and build Figma-based design foundations and responsive attendee, moderator and organisation administrator shells.
 
 ## Implemented
