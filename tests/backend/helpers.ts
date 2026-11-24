@@ -24,7 +24,9 @@ export function localDatabaseUrl() {
   if (
     url.hostname !== "127.0.0.1" ||
     url.port !== "54392" ||
-    url.pathname !== "/postgres"
+    url.pathname !== "/postgres" ||
+    url.searchParams.has("host") ||
+    url.searchParams.has("port")
   ) {
     throw new Error(
       "Backend tests are restricted to 127.0.0.1:54392/postgres.",

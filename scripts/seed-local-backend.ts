@@ -33,7 +33,9 @@ export function localTestConfig() {
   if (
     dbUrl.hostname !== "127.0.0.1" ||
     dbUrl.port !== "54392" ||
-    dbUrl.pathname !== "/postgres"
+    dbUrl.pathname !== "/postgres" ||
+    dbUrl.searchParams.has("host") ||
+    dbUrl.searchParams.has("port")
   )
     throw new Error("Test tooling cannot target a hosted database.");
   return {
