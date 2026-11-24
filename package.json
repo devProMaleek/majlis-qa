@@ -19,7 +19,7 @@
     "db:migrate": "node scripts/supabase.mjs migration up",
     "db:types": "node scripts/supabase.mjs gen types typescript --schema public > src/lib/supabase/database.types.ts",
     "backend:seed": "node --env-file=.env.test.local --import tsx scripts/seed-local-backend.ts",
-    "test:unit": "node --import tsx --test tests/unit/*.test.ts",
+    "test:unit": "node --experimental-test-module-mocks --import tsx --test tests/unit/*.test.ts",
     "test:backend": "node --env-file=.env.test.local --import tsx --test --test-concurrency=1 tests/backend/*.test.ts"
   },
   "dependencies": {

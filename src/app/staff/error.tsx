@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 
-export default function StaffError({ reset }: { reset: () => void }) {
+export default function StaffError({ retry }: { retry: () => void }) {
   return (
     <main
       id="main-content"
@@ -13,7 +13,7 @@ export default function StaffError({ reset }: { reset: () => void }) {
         We could not verify your access or load this workspace. Please try
         again.
       </p>
-      <Button onClick={reset}>Try again</Button>
+      <Button onClick={retry}>Try again</Button>
     </main>
   );
 }

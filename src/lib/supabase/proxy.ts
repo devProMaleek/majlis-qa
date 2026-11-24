@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { authCookieOptions, getSupabaseConfig } from "./config";
 import type { Database } from "./database.types";
@@ -11,6 +12,15 @@ function noStore(response: NextResponse) {
   response.headers.set("Pragma", "no-cache");
   response.headers.set("Expires", "0");
   return response;
+}
+
+function authenticationUnavailable() {
+  return noStore(
+    NextResponse.json(
+      { error: "Authentication is temporarily unavailable. Please try again." },
+      { status: 503 },
+    ),
+  );
 }
 
 export async function refreshStaffSession(request: NextRequest) {
@@ -36,16 +46,10 @@ export async function refreshStaffSession(request: NextRequest) {
   });
   try {
     // Refresh and verify. Authorisation happens again in the DAL and PostgreSQL.
-    await supabase.auth.getClaims();
+    const { error } = await supabase.auth.getClaims();
+    if (isAuthRetryableFetchError(error)) return authenticationUnavailable();
   } catch {
-    return noStore(
-      NextResponse.json(
-        {
-          error: "Authentication is temporarily unavailable. Please try again.",
-        },
-        { status: 503 },
-      ),
-    );
+    return authenticationUnavailable();
   }
   return noStore(response);
 }

@@ -1,4 +1,5 @@
 import "server-only";
+import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getSupabaseConfig } from "@/lib/supabase/config";
@@ -7,6 +8,8 @@ export async function requireIdentity() {
   if (!getSupabaseConfig()) redirect("/auth/sign-in");
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.auth.getUser();
+  if (isAuthRetryableFetchError(error))
+    throw new Error("Staff access is temporarily unavailable. Please try again.");
   if (error || !data.user) redirect("/auth/sign-in");
   return { supabase, user: data.user };
 }
