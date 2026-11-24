@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { asUser, connect, fixture, ids } from "./helpers";
 
-test("competing admin activations leave exactly one open session", async () => {
+test("competing admin activations leave exactly one open session", async (t) => {
   const owner = await connect();
+  t.after(() => owner.end());
   const first = await connect();
+  t.after(() => first.end());
   const second = await connect();
+  t.after(() => second.end());
   try {
     await owner.query("begin");
     await fixture(owner);
@@ -70,6 +73,5 @@ test("competing admin activations leave exactly one open session", async () => {
     await owner.query("delete from auth.users where id = any($1::uuid[])", [
       [ids.adminA, ids.adminB, ids.moderatorA, ids.outsider],
     ]);
-    await Promise.all([owner.end(), first.end(), second.end()]);
   }
 });
