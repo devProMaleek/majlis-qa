@@ -37,6 +37,7 @@ yarn-error.log*
 # browser test artifacts
 /test-results/
 /playwright-report/
+/work/
 
 # vercel
 .vercel
